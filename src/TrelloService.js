@@ -1,28 +1,13 @@
-import axios from "axios";
-import { Task, TaskService } from "./base/TaskService";
-import FormData from "form-data";
+const axios = require("axios");
+const FormData = require("form-data");
 
-export default class TrelloService implements TaskService {
-  key: string;
-  token: string;
-  listId: string;
-  base: string;
-
-  constructor({
-    key,
-    token,
-    listId,
-  }: {
-    key: string;
-    token: string;
-    listId: string;
-  }) {
+class TrelloService {
+  constructor({ key, token, listId }) {
     if (!key || !token || !listId) {
       throw new Error("Trello key, token and listId are required");
     }
 
-    // Normalize listId if user provided array/json/comma-separated
-    let resolvedListId: any = listId as any;
+    let resolvedListId = listId;
     if (Array.isArray(resolvedListId)) {
       const first = resolvedListId[0];
       resolvedListId = (first && (first.id || first)) || "";
@@ -67,7 +52,7 @@ export default class TrelloService implements TaskService {
     this.base = "https://api.trello.com/1";
   }
 
-  async createCard(name: string, desc: string): Promise<Task> {
+  async createCard(name, desc) {
     const url = `${this.base}/cards`;
     const params = {
       key: this.key,
@@ -76,7 +61,7 @@ export default class TrelloService implements TaskService {
       name,
       desc,
       pos: "top",
-    } as any;
+    };
 
     const resp = await axios.post(url, null, { params });
     return {
@@ -90,26 +75,19 @@ export default class TrelloService implements TaskService {
     };
   }
 
-  async addAttachment(cardId: string, attachmentUrl: string, name?: string) {
+  async addAttachment(cardId, attachmentUrl, name) {
     const url = `${this.base}/cards/${cardId}/attachments`;
     const params = {
       key: this.key,
       token: this.token,
       url: attachmentUrl,
-    } as any;
+    };
     if (name) params.name = name;
     const resp = await axios.post(url, null, { params });
     return resp.data;
   }
 
-  // Try uploading file bytes to Trello so the image shows directly on card detail.
-  // Downloads the file at `fileUrl` and posts it as multipart/form-data to Trello.
-  async addAttachmentFromUrl(
-    cardId: string,
-    fileUrl: string,
-    filename?: string,
-    name?: string
-  ) {
+  async addAttachmentFromUrl(cardId, fileUrl, filename, name) {
     const downloadResp = await axios.get(fileUrl, {
       responseType: "arraybuffer",
     });
@@ -123,7 +101,7 @@ export default class TrelloService implements TaskService {
     form.append("file", buffer, {
       filename: filename || "attachment",
       contentType,
-    } as any);
+    });
     if (name) {
       form.append("name", name);
     }
@@ -132,7 +110,7 @@ export default class TrelloService implements TaskService {
 
     const headers = form.getHeaders();
 
-    const resp = await axios.post(url, form as any, {
+    const resp = await axios.post(url, form, {
       params: { key: this.key, token: this.token },
       headers: {
         ...headers,
@@ -144,14 +122,12 @@ export default class TrelloService implements TaskService {
     return resp.data;
   }
 
-  async updateAttachmentName(
-    cardId: string,
-    attachmentId: string,
-    name: string
-  ) {
+  async updateAttachmentName(cardId, attachmentId, name) {
     const url = `${this.base}/cards/${cardId}/attachments/${attachmentId}`;
-    const params = { key: this.key, token: this.token, name } as any;
+    const params = { key: this.key, token: this.token, name };
     const resp = await axios.put(url, null, { params });
     return resp.data;
   }
 }
+
+module.exports = TrelloService;
