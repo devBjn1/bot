@@ -1,12 +1,25 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "CommonJS",
-    "rootDir": "src",
-    "outDir": "dist",
+    "target": "ES2022", // Node 20 hỗ trợ tốt đến ES2022, dùng ES2020 cũng được nhưng ES2022 mới hơn
+    "module": "CommonJS", // bắt buộc cho Node.js (trừ khi bạn dùng "module": "nodenext")
+    "lib": ["ES2022"], // thêm dòng này để có đầy đủ typing mới nhất
+    "rootDir": "./src",
+    "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
-    "removeComments": true
+    "skipLibCheck": true, // rất quan trọng: tránh lỗi conflict type của thư viện
+    "forceConsistentCasingInFileNames": true,
+    "removeComments": true,
+    "resolveJsonModule": true, // nếu bot của bạn đọc file .json (config, language, ...)
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true // đi đôi với esModuleInterop
   },
-  "include": ["src"]
+  "include": [
+    "src/**/*" // chắc chắn bao hết file trong src
+  ],
+  "exclude": ["node_modules", "dist"],
+  "ts-node": {
+    // nếu bạn vẫn muốn chạy dev bằng ts-node
+    "transpileOnly": true
+  }
 }
