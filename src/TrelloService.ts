@@ -1,4 +1,5 @@
 import axios from "axios";
+import FormData from "form-data";
 
 export default class TrelloService {
   key: string;
@@ -80,14 +81,68 @@ export default class TrelloService {
     return resp.data;
   }
 
-  async addAttachment(cardId: string, attachmentUrl: string) {
+  async addAttachment(cardId: string, attachmentUrl: string, name?: string) {
     const url = `${this.base}/cards/${cardId}/attachments`;
     const params = {
       key: this.key,
       token: this.token,
       url: attachmentUrl,
     } as any;
+    if (name) params.name = name;
     const resp = await axios.post(url, null, { params });
+    return resp.data;
+  }
+
+  // Try uploading file bytes to Trello so the image shows directly on card detail.
+  // Downloads the file at `fileUrl` and posts it as multipart/form-data to Trello.
+  async addAttachmentFromUrl(
+    cardId: string,
+    fileUrl: string,
+    filename?: string,
+    name?: string
+  ) {
+    const downloadResp = await axios.get(fileUrl, {
+      responseType: "arraybuffer",
+    });
+
+    const buffer = Buffer.from(downloadResp.data);
+    const contentType =
+      (downloadResp.headers && downloadResp.headers["content-type"]) ||
+      "application/octet-stream";
+
+    const form = new FormData();
+    form.append("file", buffer, {
+      filename: filename || "attachment",
+      contentType,
+    } as any);
+    if (name) {
+      form.append("name", name);
+    }
+
+    const url = `${this.base}/cards/${cardId}/attachments`;
+
+    const headers = form.getHeaders();
+
+    const resp = await axios.post(url, form as any, {
+      params: { key: this.key, token: this.token },
+      headers: {
+        ...headers,
+      },
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
+    });
+
+    return resp.data;
+  }
+
+  async updateAttachmentName(
+    cardId: string,
+    attachmentId: string,
+    name: string
+  ) {
+    const url = `${this.base}/cards/${cardId}/attachments/${attachmentId}`;
+    const params = { key: this.key, token: this.token, name } as any;
+    const resp = await axios.put(url, null, { params });
     return resp.data;
   }
 }

@@ -27,6 +27,11 @@ export default class TelegramService {
     return this.bot.sendPhoto(chatId as any, fileId, options);
   }
 
+  async sendMediaGroup(chatId: number | string, media: any[], options?: any) {
+    // media = [{ type: 'photo', media: fileIdOrUrl, caption?: string, parse_mode?: 'Markdown' }, ...]
+    return this.bot.sendMediaGroup(chatId as any, media as any, options as any);
+  }
+
   async sendMessage(chatId: number | string, text: string, options?: any) {
     return this.bot.sendMessage(chatId as any, text, options);
   }
