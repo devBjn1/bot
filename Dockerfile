@@ -9,7 +9,7 @@ RUN npm install
 
 # Copy sources and build TS
 COPY . .
-RUN npm run build
+# RUN npm run build
 
 # Runner stage
 FROM node:20-alpine AS runner
