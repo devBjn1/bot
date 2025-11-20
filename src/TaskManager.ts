@@ -1,5 +1,9 @@
-export type PendingTask = { title: string; description: string };
-export type PendingImage = { photo: any; msg: any };
+export type PendingTask = {
+  title: string;
+  description: string;
+  cardId?: string;
+};
+export type PendingImage = { photos: any[]; msgs: any[] };
 
 export default class TaskManager {
   private taskCounter: number;
@@ -12,8 +16,13 @@ export default class TaskManager {
     this.pendingImages = new Map();
   }
 
-  addPendingTask(userId: number, title: string, description: string) {
-    this.pendingTasks.set(userId, { title, description });
+  addPendingTask(
+    userId: number,
+    title: string,
+    description: string,
+    cardId?: string
+  ) {
+    this.pendingTasks.set(userId, { title, description, cardId });
   }
 
   getPendingTask(userId: number): PendingTask | undefined {
@@ -25,7 +34,14 @@ export default class TaskManager {
   }
 
   addPendingImage(userId: number, photo: any, msg: any) {
-    this.pendingImages.set(userId, { photo, msg });
+    const existing = this.pendingImages.get(userId);
+    if (existing) {
+      existing.photos.push(photo);
+      existing.msgs.push(msg);
+      this.pendingImages.set(userId, existing);
+    } else {
+      this.pendingImages.set(userId, { photos: [photo], msgs: [msg] });
+    }
   }
 
   getPendingImage(userId: number): PendingImage | undefined {
