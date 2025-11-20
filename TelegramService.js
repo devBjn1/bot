@@ -2,8 +2,14 @@ const TelegramBot = require("node-telegram-bot-api");
 
 class TelegramService {
   constructor(token) {
-    if (!token) throw new Error("Telegram token required");
-    this.bot = new TelegramBot(token, { polling: true });
+    // allow token to be passed or read from environment (helps in Docker/deploy)
+    const resolvedToken = token || process.env.TELEGRAM_BOT_TOKEN;
+    if (!resolvedToken) {
+      throw new Error(
+        "Telegram token required. Set the TELEGRAM_BOT_TOKEN environment variable or add it to a .env file in the project root."
+      );
+    }
+    this.bot = new TelegramBot(resolvedToken, { polling: true });
   }
 
   onPhoto(handler) {

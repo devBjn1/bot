@@ -5,7 +5,7 @@ const TrelloService = require("./TrelloService");
 const TaskManager = require("./TaskManager");
 
 // Load .env from project root (one level up from src/) so running from src/ still works
-dotenv.config({ path: path.resolve(__dirname, "..", ".env") });
+dotenv.config();
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const BUG_LOG_GROUP_ID = process.env.BUG_LOG_GROUP_ID;
