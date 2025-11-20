@@ -1,5 +1,5 @@
 import axios from "axios";
-import { TaskService } from "./base/TaskService";
+import { Task, TaskService } from "./base/TaskService";
 import FormData from "form-data";
 
 export default class TrelloService implements TaskService {
@@ -67,7 +67,7 @@ export default class TrelloService implements TaskService {
     this.base = "https://api.trello.com/1";
   }
 
-  async createCard(name: string, desc: string) {
+  async createCard(name: string, desc: string): Promise<Task> {
     const url = `${this.base}/cards`;
     const params = {
       key: this.key,
@@ -79,7 +79,15 @@ export default class TrelloService implements TaskService {
     } as any;
 
     const resp = await axios.post(url, null, { params });
-    return resp.data;
+    return {
+      id: resp.data.id,
+      title: resp.data.name,
+      userRequest: "",
+      description: resp.data.desc,
+      cardId: resp.data.id,
+      shortUrl: resp.data.shortUrl,
+      url: resp.data.url,
+    };
   }
 
   async addAttachment(cardId: string, attachmentUrl: string, name?: string) {
