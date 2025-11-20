@@ -1,8 +1,11 @@
 import { BUG_LOG_GROUP_ID, telegram, taskService, taskManager } from "./config";
-
+import express from "express";
 import getHelpMessage from "./command/HelpMessage";
 import { createTask, createTaskService } from "./command/CreateTask";
 import onPhotoCommandHandler from "./command/PhotoCommand";
+
+const app = express();
+const PORT = process.env.PORT || 8080;
 
 const slashCommands = [
   {
@@ -383,3 +386,9 @@ telegram.onPhoto(onPhotoCommandHandler);
 //     return;
 //   }
 // });
+
+// Optional: a simple web route for health checks
+app.get("/", (_req, res) => res.send("Bot is running"));
+
+// Start Express server
+app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
