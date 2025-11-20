@@ -1,6 +1,7 @@
 import axios from "axios";
+import { TaskService } from "./base/TaskService";
 
-export default class TrelloService {
+export default class TrelloService implements TaskService {
   key: string;
   token: string;
   listId: string;

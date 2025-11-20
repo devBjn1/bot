@@ -16,6 +16,22 @@ export default class TelegramService {
     this.bot.on("text", handler as any);
   }
 
+  onCommand(
+    command: string,
+    handler: (
+      msg: TelegramBot.Message,
+      match?: RegExpMatchArray | null
+    ) => void
+  ) {
+    const escaped = command.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(`^${escaped}(?:\\s|$)`);
+    this.bot.onText(pattern, handler as any);
+  }
+
+  setBotCommands(commands: TelegramBot.BotCommand[]) {
+    return this.bot.setMyCommands(commands);
+  }
+
   async getFileUrl(fileId: string) {
     const file = await this.bot.getFile(fileId);
     return `https://api.telegram.org/file/bot${(this.bot as any).token}/${

@@ -1,20 +1,33 @@
-import {
-  TELEGRAM_BOT_TOKEN,
-  BUG_LOG_GROUP_ID,
-  TRELLO_KEY,
-  TRELLO_TOKEN,
-  TRELLO_LIST_ID,
-} from "./config";
+import { BUG_LOG_GROUP_ID, telegram, taskService } from "./config";
+
 import TaskManager from "./TaskManager";
-import TelegramService from "./TelegramService";
-import TrelloService from "./TrelloService";
+// import TelegramService from "./TelegramService";
+import getHelpMessage from "./command/HelpMessage";
 
 const taskManager = new TaskManager();
-const telegram = new TelegramService(TELEGRAM_BOT_TOKEN);
-const trello = new TrelloService({
-  key: TRELLO_KEY as string,
-  token: TRELLO_TOKEN as string,
-  listId: TRELLO_LIST_ID as string,
+// const telegram = new TelegramService(TELEGRAM_BOT_TOKEN);
+const slashCommands = [
+  {
+    command: "/help",
+    description: "See usage instructions",
+    handler: getHelpMessage,
+  },
+  {
+    command: "/start",
+    description: "See usage instructions",
+    handler: getHelpMessage,
+  },
+];
+
+telegram.setBotCommands(
+  slashCommands.map(({ command, description }) => ({
+    command: command.replace("/", ""),
+    description,
+  }))
+);
+
+slashCommands.forEach(({ command, handler }) => {
+  telegram.onCommand(command, handler);
 });
 
 console.log("🤖 Bot is running... Waiting for images to create tasks.");
@@ -31,13 +44,13 @@ telegram.onPhoto(async (msg: any) => {
   const pendingTask = taskManager.getPendingTask(userId);
   if (pendingTask) {
     try {
-      const card = await trello.createCard(
+      const card = await taskService.createCard(
         pendingTask.title,
         pendingTask.description
       );
       try {
         const fileUrl = await telegram.getFileUrl(photo.file_id);
-        await trello.addAttachment(card.id, fileUrl);
+        await taskService.addAttachment(card.id, fileUrl);
       } catch (attachErr: any) {
         console.warn(
           "Could not attach image to Trello card:",
@@ -118,10 +131,10 @@ telegram.onText(async (msg: any) => {
     const pendingImage = taskManager.getPendingImage(userId);
     if (pendingImage) {
       try {
-        const card = await trello.createCard(title, description);
+        const card = await taskService.createCard(title, description);
         try {
           const fileUrl = await telegram.getFileUrl(pendingImage.photo.file_id);
-          await trello.addAttachment(card.id, fileUrl);
+          await taskService.addAttachment(card.id, fileUrl);
         } catch (attachErr: any) {
           console.warn(
             "Could not attach image to Trello card:",
@@ -139,11 +152,11 @@ telegram.onText(async (msg: any) => {
           card.shortUrl || card.url
         }`;
 
-        await telegram.sendPhoto(
-          BUG_LOG_GROUP_ID as any,
-          pendingImage.photo.file_id,
-          { caption: taskMessage, parse_mode: "Markdown" }
-        );
+        // await telegram.sendPhoto(
+        //   BUG_LOG_GROUP_ID as any,
+        //   pendingImage.photo.file_id,
+        //   { caption: taskMessage, parse_mode: "Markdown" }
+        // );
         await telegram.sendMessage(
           chatId,
           `✅ Task created successfully! View on Trello: ${
@@ -170,23 +183,17 @@ telegram.onText(async (msg: any) => {
     return;
   }
 
-  if (text === "/start" || text === "/help") {
-    await telegram.sendMessage(
-      chatId,
-      "🤖 *Task Logging Bot*\n\n*How to create a task:*\n\n*Option 1:* Send `/create` first, then image\n*Option 2:* Send image first, then `/create`\n\n*Format:*\n`/create {title}. {description}`\n\n*Example:*\n`/create Bug on login page. Cannot click submit button after entering credentials`",
-      { parse_mode: "Markdown" }
-    );
-    return;
-  }
-
-  if (text === "/chatid") {
-    await telegram.sendMessage(
-      chatId,
-      `📍 *Chat Information*\n\nChat ID: \`${chatId}\`\nChat Title: ${
-        msg.chat.title || "Private Chat"
-      }\n\nUse this Chat ID in your .env file as BUG_LOG_GROUP_ID`,
-      { parse_mode: "Markdown" }
-    );
-    return;
-  }
+  // if (text === "/chatid") {
+  //   await telegram.sendMessage(
+  //     chatId,
+  //     `📍 *Chat Information*\n\nChat ID: \`${chatId}\`\nChat Title: ${
+  //       msg.chat.title || "Private Chat"
+  //     }\n\nUse this Chat ID in your .env file as BUG_LOG_GROUP_ID`,
+  //     { parse_mode: "Markdown" }
+  //   );
+  //   return;
+  // }
 });
+
+
+// telegram.onText()
