@@ -1,0 +1,15 @@
+node_modules
+dist
+.env
+.env.*
+npm-debug.log
+Dockerfile
+README.md
+.git
+*.tsbuildinfo
+*.log
+coverage
+scripts
+src
+test
+tsconfig.json
