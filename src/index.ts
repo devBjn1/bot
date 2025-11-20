@@ -25,8 +25,8 @@ const slashCommands = [
   }
 ];
 
-console.log("🤖 Bot is running... Waiting for images to create tasks.");
-console.log("📊 Tasks will be sent to group:", BUG_LOG_GROUP_ID);
+console.log(" Bot is running... Waiting for images to create tasks.");
+// console.log("📊 Tasks will be sent to group:", BUG_LOG_GROUP_ID);
 
 telegram.setBotCommands(
   slashCommands.map(({ command, description }) => ({
