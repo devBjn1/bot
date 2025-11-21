@@ -11,7 +11,8 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 8080;
 const LEAPCELL_URL =
-  process.env.LEAPCELL || "https://bot-devbjn15447-an647o9n.apn.leapcell.dev"; // put your real Leapcell URL here
+  process.env.SERVICE_DOMAIN ||
+  "https://bot-devbjn15447-an647o9n.apn.leapcell.dev"; // put your real Leapcell URL here
 
 const slashCommands = [
   {
