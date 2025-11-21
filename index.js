@@ -1,19 +1,27 @@
-const { BUG_LOG_GROUP_ID, telegram, bot } = require("./config");
+// index.js
 const express = require("express");
+const axios = require("axios");
+const TelegramService = require("./TelegramService");
 const getHelpMessage = require("./command/HelpMessage");
 const { createTask } = require("./command/CreateTask");
 const onPhotoCommandHandler = require("./command/PhotoCommand");
 
 const app = express();
-
-// CRITICAL: Parse JSON body from Telegram
 app.use(express.json());
 
 const PORT = process.env.PORT || 8080;
-const LEAPCELL_URL =
+const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const PUBLIC_URL =
   process.env.SERVICE_DOMAIN ||
-  "https://bot-devbjn15447-an647o9n.apn.leapcell.dev"; // put your real Leapcell URL here
+  "[https://bot-devbjn15447-an647o9n.apn.leapcell.dev](https://bot-devbjn15447-an647o9n.apn.leapcell.dev)";
 
+if (!TELEGRAM_TOKEN) {
+  throw new Error("Set TELEGRAM_BOT_TOKEN environment variable");
+}
+
+const telegram = new TelegramService(TELEGRAM_TOKEN);
+
+// Commands
 const slashCommands = [
   {
     command: "/help",
@@ -28,8 +36,6 @@ const slashCommands = [
   { command: "/create", description: "Create a task", handler: createTask },
 ];
 
-console.log("Bot is running... Waiting for images to create tasks.");
-
 // Set bot commands
 telegram.setBotCommands(
   slashCommands.map(({ command, description }) => ({
@@ -39,51 +45,41 @@ telegram.setBotCommands(
 );
 
 // Register command handlers
-slashCommands.forEach(({ command, handler }) => {
-  telegram.onCommand(command, handler);
-});
+slashCommands.forEach(({ command, handler }) =>
+  telegram.onCommand(command, handler)
+);
 
-// Photo handler
+// Register photo handler
 telegram.onPhoto(onPhotoCommandHandler);
 
-app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, bot.webhookCallback);
+console.log("Bot initialized.");
+
+// Express route to receive Telegram updates
+app.post(`/bot${TELEGRAM_TOKEN}`, (req, res) => {
+  telegram.bot.processUpdate(req.body);
+  res.sendStatus(200);
+});
 
 // Health check
 app.get("/", (_req, res) => {
   res.send("Bot is running");
-  console.log("bot", bot);
 });
 
-// Fixed /set-webhook route
-app.get("/set-webhook", async (req, res) => {
-  const url = `${LEAPCELL_URL}/bot${process.env.TELEGRAM_BOT_TOKEN}`;
-  try {
-    const result = await bot.telegram.setWebhook(url);
-    res.send({
-      ok: result,
-      url,
-      message: result ? "Webhook set successfully!" : "Failed",
-    });
-  } catch (err) {
-    res.status(500).send({ error: err.message });
-  }
-});
-
-// Start server + auto set webhook
-app.listen(PORT, async () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(
-    `Your bot URL: ${LEAPCELL_URL}/bot${process.env.TELEGRAM_BOT_TOKEN}`
-  );
-
-  console.log("bot telegraf", bot);
-  console.log("telegram.bot =========", telegram.bot);
-
-  try {
-    const webhookUrl = `${LEAPCELL_URL}/bot${process.env.TELEGRAM_BOT_TOKEN}`;
-    await bot.telegram.setWebhook(webhookUrl);
-    console.log("Webhook set to:", webhookUrl);
-  } catch (err) {
+// Set webhook on Telegram
+const webhookUrl = `${PUBLIC_URL}/bot${TELEGRAM_TOKEN}`;
+axios
+  .post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/setWebhook`, {
+    url: webhookUrl,
+  })
+  .then((response) => {
+    console.log("Webhook set successfully:", response.data);
+  })
+  .catch((err) => {
     console.error("Failed to set webhook:", err.message);
-  }
+  });
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Webhook URL: ${webhookUrl}`);
 });
