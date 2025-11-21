@@ -65,7 +65,7 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, async () => {
-  const url = `https://${process.env.SERVICE_DOMAIN}/bot${process.env.TELEGRAM_BOT_TOKEN}`;
+  const url = `${process.env.SERVICE_DOMAIN}/bot${process.env.TELEGRAM_BOT_TOKEN}`;
 
   console.log(`Server chạy trên port ${PORT}`);
   console.log(`Webhook URL: ${url}`);
