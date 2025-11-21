@@ -46,11 +46,7 @@ slashCommands.forEach(({ command, handler }) => {
 // Photo handler
 telegram.onPhoto(onPhotoCommandHandler);
 
-// Webhook endpoint
-app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
-  bot.processUpdate(req.body);
-  res.sendStatus(200);
-});
+app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, bot.webhookCallback);
 
 // Health check
 app.get("/", (_req, res) => res.send("Bot is running"));
