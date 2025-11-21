@@ -9,7 +9,17 @@ class TelegramService {
         "Telegram token required. Set TELEGRAM_BOT_TOKEN environment variable."
       );
     }
-    this.bot = new TelegramBot(resolvedToken, { polling: false }); // polling disabled for webhook
+    this.bot = new TelegramBot(resolvedToken, {
+      polling: {
+        interval: 300, // nhanh, ổn định
+        autoStart: true, // bắt đầu ngay
+        params: {
+          timeout: 10, // tránh timeout
+        },
+      },
+    });
+
+    console.log("Bot khởi động với polling thành công!");
   }
 
   onText(handler) {
