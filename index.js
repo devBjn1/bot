@@ -49,7 +49,10 @@ telegram.onPhoto(onPhotoCommandHandler);
 app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, bot.webhookCallback);
 
 // Health check
-app.get("/", (_req, res) => res.send("Bot is running"));
+app.get("/", (_req, res) => {
+  res.send("Bot is running");
+  console.log("bot", bot);
+});
 
 // Fixed /set-webhook route
 app.get("/set-webhook", async (req, res) => {
@@ -72,6 +75,9 @@ app.listen(PORT, async () => {
   console.log(
     `Your bot URL: ${LEAPCELL_URL}/bot${process.env.TELEGRAM_BOT_TOKEN}`
   );
+
+  console.log("bot telegraf", bot);
+  console.log("telegram.bot =========", telegram.bot);
 
   try {
     const webhookUrl = `${LEAPCELL_URL}/bot${process.env.TELEGRAM_BOT_TOKEN}`;
