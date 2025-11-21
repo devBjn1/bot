@@ -52,9 +52,11 @@ const app = express();
 app.use(express.json());
 
 // Webhook route – CHỈ 1 DÒNG DUY NHẤT (siêu gọn, siêu mạnh!)
-app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
-  bot.handleUpdate(req.body, res); // hoặc dùng: bot.webhookCallback(req, res)
-});
+// app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
+//   bot.handleUpdate(req.body, res); // hoặc dùng: bot.webhookCallback(req, res)
+// });
+
+app.use(bot.webhookCallback(`/bot${process.env.TELEGRAM_BOT_TOKEN}`));
 
 // Health check + để UptimeRobot ping
 app.get("/", (req, res) => {
