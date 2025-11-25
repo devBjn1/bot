@@ -193,6 +193,10 @@ async function handle(request) {
   if (caption === "/start" && chatId) {
     await sendTelegram(chatId, "Welcome! Send /help");
   }
+  if (caption === "/talk" && chatId) {
+    await sendTelegram(chatId, "Anh duong ngao'");
+  }
+
   if (caption === "/help" && chatId) {
     await sendTelegram(
       chatId,
